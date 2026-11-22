@@ -1,0 +1,9 @@
+# Personal settings and local logs never go in the repo
+widget/config.js
+widget/focus-log.js
+widget/focus-log.json
+widget/focus-pending.json
+*.bak*
+*.backup*
+.DS_Store
+Thumbs.db

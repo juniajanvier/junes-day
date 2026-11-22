@@ -1,0 +1,719 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>June's Day</title>
+<link rel="icon" type="image/png" href="junes-day.png">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  @font-face { font-family: "Bodoni Moda"; src: url("fonts/BodoniModa_28pt-Regular.ttf"); }
+  @font-face { font-family: "Poppins"; src: url("fonts/Poppins-Regular.ttf"); }
+  :root {
+    --bg: #2a1a22; --card: #3a2430; --card2: #4a2e3e; --cream: #fcf4e8; --gold: #e2bd85;
+    --blush: #e9b9a8; --plum: #8e5a7a; --muted: #bfa8b2; --good: #9cc7a0; --warn: #e8a07a;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--cream); font: 13px "Poppins", "Segoe UI", sans-serif; overflow-x: hidden; overflow-y: auto; user-select: none; }
+  .wrap { width: 100%; max-width: 620px; margin: 0 auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; min-height: 100%; }
+  header { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .brand { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .brand img { width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0; }
+  h1 { font: 400 22px "Bodoni Moda", Georgia, serif; margin: 0; letter-spacing: .01em; }
+  .date { color: var(--muted); font-size: 11px; letter-spacing: .18em; text-transform: uppercase; }
+  .tabs { display: flex; gap: 6px; }
+  .tab { flex: 1; min-width: 0; text-align: center; padding: 5px 0; border-radius: 999px; background: var(--card); color: var(--muted); cursor: pointer; font-size: 11px; letter-spacing: .08em; }
+  .tab.on { background: var(--plum); color: var(--cream); }
+  .scene { position: relative; aspect-ratio: 16 / 9; width: min(100%, calc(46vh * 16 / 9)); align-self: center; border-radius: 18px; overflow: hidden; background: #2a1a22; flex-shrink: 0; }
+  .scene .art { position: absolute; inset: 0; opacity: 0; transition: opacity .9s ease; }
+  .scene .art.in { opacity: 1; }
+  .scene .art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform-origin: 50% 60%; }
+  .scene canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; }
+  .glow { position: absolute; width: 70px; height: 70px; margin: -35px 0 0 -35px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,214,150,.55), rgba(255,190,110,0) 70%); mix-blend-mode: screen; animation: flick 1.7s infinite; }
+  @keyframes flick { 0%,100% { opacity: .75; transform: scale(1); } 23% { opacity: .55; transform: scale(.94); } 41% { opacity: .9; transform: scale(1.05); } 67% { opacity: .65; transform: scale(.97); } }
+  .fx-breathe img { animation: breathe 9s ease-in-out infinite; }
+  @keyframes breathe { 50% { transform: scale(1.025); } }
+  .fx-purr img { animation: breathe 9s ease-in-out infinite, purr .14s linear infinite; }
+  .fx-shake img { animation: shake 3.4s ease-in-out infinite; }
+  @keyframes shake { 0%,70%,100% { transform: translate(0,0) rotate(0); } 74% { transform: translate(-2px,0) rotate(-.4deg); } 78% { transform: translate(2px,1px) rotate(.4deg); } 82% { transform: translate(-2px,0) rotate(-.3deg); } 86% { transform: translate(1px,0); } }
+  .fx-bounce img { animation: bounce 2.2s ease-in-out infinite; }
+  @keyframes bounce { 50% { transform: translateY(-2px) scale(1.012); } }
+  .mood { position: absolute; left: 0; bottom: 0; right: 0; z-index: 3; padding: 26px 12px 9px; display: flex; justify-content: space-between; align-items: flex-end; color: var(--cream);
+    background: linear-gradient(to top, rgba(30,16,20,.85), rgba(30,16,20,0)); }
+  .mood b { font: 400 17px "Bodoni Moda", Georgia, serif; }
+  .mood span { font-size: 10.5px; flex: 1; min-width: 0; text-align: right; margin-left: 10px; }
+  .score { display: grid; grid-template-columns: 74px minmax(0,1fr); gap: 12px; align-items: center; }
+  .ring { position: relative; width: 74px; height: 74px; }
+  .ring svg { transform: rotate(-90deg); }
+  .ring .pct { position: absolute; inset: 0; display: grid; place-items: center; font: 400 17px "Bodoni Moda", Georgia, serif; }
+  .bars { display: flex; flex-direction: column; gap: 6px; }
+  .bar { display: grid; grid-template-columns: 52px minmax(0,1fr) 44px; gap: 8px; align-items: center; font-size: 11px; }
+  .bar .t { height: 7px; background: var(--card); border-radius: 9px; overflow: hidden; }
+  .bar .f { height: 100%; width: 0; background: linear-gradient(90deg, var(--blush), var(--gold)); border-radius: 9px; transition: width .8s ease; }
+  .bar .v { text-align: right; color: var(--muted); }
+  .chips { display: flex; flex-wrap: wrap; gap: 5px; }
+  .chip { font-size: 10.5px; padding: 3px 8px; border-radius: 999px; background: var(--card); color: var(--muted); }
+  .chip.done { background: #5c3d4f; color: var(--cream); }
+  .chip.done::before { content: "\2713  "; color: var(--gold); }
+  .groups { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 6px; }
+  .grp { background: var(--card); border-radius: 12px; padding: 6px 4px; text-align: center; cursor: pointer; }
+  .grp b { display: block; font: 400 15px "Bodoni Moda", Georgia, serif; }
+  .grp span { font-size: 10px; color: var(--muted); letter-spacing: .06em; }
+  .grp.sel { outline: 1px solid var(--gold); }
+  .pomo { background: var(--card); border-radius: 18px; padding: 10px 12px; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 6px; }
+  .pomo .time { font: 400 34px "Bodoni Moda", Georgia, serif; line-height: 1; }
+  .pomo .lbl { font-size: 10.5px; color: var(--muted); letter-spacing: .12em; text-transform: uppercase; }
+  .pomo .btns { display: flex; gap: 6px; }
+  .pomo .lbl { display: flex; align-items: center; gap: 6px; }
+  .pomo .adj { width: 18px; height: 18px; min-width: 0; padding: 0; border-radius: 50%; font: 600 12px/1 "Poppins", "Segoe UI", sans-serif; display: inline-grid; place-items: center; opacity: .75; }
+  .pomo .adj:hover { opacity: 1; }
+  .pomo .adj:disabled { opacity: .25; cursor: default; }
+  button { font: inherit; font-size: 11px; border: 0; border-radius: 999px; padding: 7px 12px; cursor: pointer; background: var(--card2); color: var(--cream); }
+  button.main { background: var(--gold); color: #3a2420; }
+  .tomatoes { font-size: 12px; letter-spacing: 2px; color: var(--blush); }
+  footer { margin-top: auto; display: flex; justify-content: space-between; color: var(--muted); font-size: 10.5px; }
+  footer a { color: var(--gold); text-decoration: none; cursor: pointer; }
+  .ringing .pomo { animation: glow 1s ease-in-out infinite; }
+  @keyframes glow { 50% { box-shadow: 0 0 0 3px var(--gold); } }
+
+  /* cat animations */
+  .tail { transform-origin: 248px 152px; animation: swish 3s ease-in-out infinite; }
+  .s0 .tail { animation-duration: .45s; }
+  .s1 .tail { animation-duration: 1.4s; }
+  .s3 .tail { animation-duration: 5s; }
+  @keyframes swish { 0%,100% { transform: rotate(-8deg); } 50% { transform: rotate(14deg); } }
+  .s3 .catbody { animation: purr .12s linear infinite; }
+  @keyframes purr { 50% { transform: translate(.6px, -.4px); } }
+  .blink { animation: blink 4s infinite; transform-origin: center; transform-box: fill-box; }
+  @keyframes blink { 0%,94%,100% { transform: scaleY(1); } 97% { transform: scaleY(.1); } }
+  .heart { animation: float 3s ease-in infinite; opacity: 0; }
+  @keyframes float { 0% { transform: translateY(0); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(-60px); opacity: 0; } }
+  .mug { transform-origin: 70px 150px; }
+  .s0 .mug { animation: tip 3.2s ease-in-out infinite; }
+  @keyframes tip { 0%,30% { transform: none; } 55%,85% { transform: translateX(14px) rotate(70deg); } 100% { transform: none; } }
+  .bubble { animation: pop 2.8s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+  @keyframes pop { 0%,100% { transform: scale(.9); opacity: .85; } 50% { transform: scale(1.05); opacity: 1; } }
+  /* cooking */
+  .steam path { animation: steam 2.6s ease-in-out infinite; opacity: .0; }
+  .steam path:nth-child(2) { animation-delay: .8s; } .steam path:nth-child(3) { animation-delay: 1.6s; }
+  @keyframes steam { 0% { transform: translateY(6px); opacity: 0; } 40% { opacity: .7; } 100% { transform: translateY(-18px); opacity: 0; } }
+  .stir { transform-origin: 112px 118px; animation: stir 1.6s ease-in-out infinite; }
+  @keyframes stir { 0%,100% { transform: rotate(-10deg); } 50% { transform: rotate(12deg); } }
+  .food { transition: opacity .8s; }
+  .sparkle { animation: tw 1.8s ease-in-out infinite; }
+  @keyframes tw { 50% { opacity: .15; } }
+  /* responsive: narrow and short windows */
+  @media (max-width: 360px) {
+    .wrap { padding: 10px; gap: 8px; }
+    h1 { font-size: 18px; } .brand img { width: 22px; height: 22px; }
+    .date { font-size: 9.5px; letter-spacing: .1em; }
+    .groups { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .score { grid-template-columns: 58px minmax(0,1fr); gap: 8px; }
+    .ring, .ring svg { width: 58px; height: 58px; } .ring .pct { font-size: 14px; }
+    .bar { grid-template-columns: 42px minmax(0,1fr) 34px; gap: 5px; font-size: 10px; }
+    .mood span { display: none; }
+    .pomo { grid-template-columns: 1fr; } .pomo .time { font-size: 28px; }
+  }
+  @media (max-height: 560px) {
+    .scene { width: min(100%, calc(34vh * 16 / 9)); }
+    .chips { display: none; }
+    .pomo .time { font-size: 26px; }
+  }
+  @media (min-width: 640px) { body { display: flex; justify-content: center; } }
+  /* v2: next event, week strip, tappable habits, up next, topics, toast */
+  .nextev { font-size: 11px; color: var(--muted); display: flex; gap: 6px; align-items: center; min-height: 14px; }
+  .nextev b { color: var(--gold); font-weight: 400; }
+  .week { display: grid; grid-template-columns: repeat(7, minmax(0,1fr)); gap: 4px; }
+  .day { background: var(--card); border-radius: 10px; padding: 4px 2px 5px; text-align: center; font-size: 9.5px; color: var(--muted); }
+  .day.today { outline: 1px solid var(--gold); }
+  .day .meter { height: 26px; width: 8px; margin: 3px auto; background: var(--card2); border-radius: 5px; position: relative; overflow: hidden; }
+  .day .meter i { position: absolute; left: 0; right: 0; bottom: 0; background: linear-gradient(0deg, var(--blush), var(--gold)); border-radius: 5px; }
+  .day .fd { color: var(--blush); letter-spacing: 1px; min-height: 11px; }
+  .chip.tap { cursor: pointer; }
+  .chip.tap:hover { outline: 1px solid var(--plum); }
+  .chip.busy { opacity: .5; }
+  .upnext { background: var(--card); border-radius: 14px; padding: 8px 10px; display: flex; flex-direction: column; gap: 5px; }
+  .upnext h3 { margin: 0; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 400; }
+  .task { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 8px; align-items: center; font-size: 11.5px; }
+  .task span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .task em { font-style: normal; color: var(--warn); font-size: 10px; margin-left: 4px; }
+  .task button { padding: 3px 9px; font-size: 10.5px; }
+  .topics { display: flex; flex-wrap: wrap; gap: 4px; margin: 5px 0 3px; }
+  .topic { font-size: 10px; padding: 2px 8px; border-radius: 999px; background: var(--card2); color: var(--muted); cursor: pointer; }
+  .topic.on { background: var(--plum); color: var(--cream); }
+  .wkmin { font-size: 10px; color: var(--muted); }
+  .toast { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%) translateY(140%); background: var(--plum); color: var(--cream); padding: 8px 12px; border-radius: 14px; font-size: 11.5px; display: flex; gap: 8px; align-items: center; transition: transform .4s ease; z-index: 10; max-width: 92%; }
+  .toast { visibility: hidden; opacity: 0; transition: transform .4s ease, opacity .3s ease, visibility 0s linear .4s; }
+  .toast.show { transform: translateX(-50%) translateY(0); visibility: visible; opacity: 1; transition: transform .4s ease, opacity .3s ease; }
+  .toast button { padding: 3px 9px; font-size: 10.5px; }
+  @media (max-height: 560px) { .week, .upnext { display: none; } }
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+  <header>
+    <div class="brand"><img src="junes-day.png" alt=""><h1>June's Day</h1></div>
+    <div class="date" id="date"></div>
+  </header>
+  <div class="nextev" id="nextEv"></div>
+
+  <div class="tabs">
+    <div class="tab on" data-view="cat">Cat</div>
+    <div class="tab" data-view="cook">Kitchen</div>
+  </div>
+
+  <div class="scene" id="scene"><canvas id="fx"></canvas><div class="mood"></div></div>
+
+  <div class="score">
+    <div class="ring">
+      <svg width="74" height="74" viewBox="0 0 74 74">
+        <circle cx="37" cy="37" r="31" fill="none" stroke="#4a2e3e" stroke-width="7"/>
+        <circle id="ringFg" cx="37" cy="37" r="31" fill="none" stroke="url(#rg)" stroke-width="7" stroke-linecap="round" stroke-dasharray="194.8" stroke-dashoffset="194.8" style="transition: stroke-dashoffset 1s ease"/>
+        <defs><linearGradient id="rg"><stop offset="0" stop-color="#e9b9a8"/><stop offset="1" stop-color="#e2bd85"/></linearGradient></defs>
+      </svg>
+      <div class="pct" id="pct">0%</div>
+    </div>
+    <div class="bars">
+      <div class="bar"><span>Habits</span><div class="t"><div class="f" id="bHab"></div></div><span class="v" id="vHab"></span></div>
+      <div class="bar"><span>Tasks</span><div class="t"><div class="f" id="bTask"></div></div><span class="v" id="vTask"></span></div>
+      <div class="bar"><span>Focus</span><div class="t"><div class="f" id="bFocus"></div></div><span class="v" id="vFocus"></span></div>
+    </div>
+  </div>
+
+  <div class="week" id="week"></div>
+
+  <div class="groups" id="groups"></div>
+  <div class="chips" id="chips"></div>
+
+  <div class="upnext" id="upnext" hidden></div>
+
+  <div class="pomo">
+    <div>
+      <div class="lbl"><button class="adj" id="pMinus" title="Shorter">−</button><span id="pLbl">Focus · 25 min</span><button class="adj" id="pPlus" title="Longer">+</button></div>
+      <div class="time" id="pTime">25:00</div>
+      <div class="topics" id="topics"></div>
+      <div class="tomatoes" id="tomatoes"></div>
+      <div class="wkmin" id="wkmin"></div>
+    </div>
+    <div class="btns">
+      <button class="main" id="pStart">Start</button>
+      <button id="pReset">Reset</button>
+    </div>
+  </div>
+
+  <footer>
+    <span id="status">Loading your day…</span>
+    <a id="logLink">Log habits</a>
+  </footer>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="config.js"></script>
+<script>if (typeof CONFIG !== "undefined" && CONFIG.demo) document.write('<script src="sample-data.js"><\/script>');</script>
+<script>
+// ---------- state ----------
+const $ = id => document.getElementById(id);
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+};
+const todayStr = () => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
+let view = new URLSearchParams(location.search).get("view") || store.get("view", "cat");
+let data = null, selGroup = store.get("group", "Body");
+
+// ---------- habits ----------
+const GROUPS = {
+  Body: ["Water", "Walk", "Stretched", "Workout", "Sleep"],
+  Mind: ["Read", "Pages", "Study", "Language practice", "Bible / prayer", "Wrote"],
+  Admin: ["Emails handled", "Texts answered"],
+  Health: ["Med 1", "Med 2", "Med 3", "Vitamins", "Skincare AM", "Skincare PM"]
+};
+function habitStatus(d) {
+  const H = d.habits.headers, R = d.habits.row || [], T = d.targets;
+  const val = name => { const i = H.indexOf(name); return i < 0 ? "" : R[i]; };
+  const num = name => { const v = parseFloat(val(name)); return isNaN(v) ? 0 : v; };
+  const yes = name => val(name) === true || val(name) === "TRUE";
+  // Med columns take whatever name June typed on Habit Lists, so match by position
+  const medIdx = H.indexOf("Vitamins");
+  const meds = [medIdx - 3, medIdx - 2, medIdx - 1].map(i => ({ name: H[i] || "Med", done: R[i] === true }));
+  const s = {
+    "Water": { done: num("Water (oz)") >= T.waterOz, label: "Water " + num("Water (oz)") + "/" + T.waterOz + " oz" },
+    "Walk": { done: num("Walk (min)") >= T.walkMin, label: "Walk " + num("Walk (min)") + "/" + T.walkMin + " min" },
+    "Stretched": { done: yes("Stretched") },
+    "Workout": { done: !!val("Workout") && val("Workout") !== "Rest day", label: val("Workout") ? "Workout: " + val("Workout") : "Workout" },
+    "Sleep": { done: num("Sleep (hrs)") >= T.sleepHrs, label: "Sleep " + num("Sleep (hrs)") + "/" + T.sleepHrs + " h" },
+    "Read": { done: yes("Read") },
+    "Pages": { done: num("Pages read") >= T.pages, label: "Pages " + num("Pages read") + "/" + T.pages },
+    "Study": { done: num("Study min (auto)") > 0, label: "Study " + num("Study min (auto)") + " min" },
+    "Language practice": { done: yes("Language practice") },
+    "Bible / prayer": { done: yes("Bible / prayer") },
+    "Wrote": { done: yes("Wrote") },
+    "Emails handled": { done: yes("Emails handled") },
+    "Texts answered": { done: yes("Texts answered") },
+    "Med 1": { done: meds[0].done, label: meds[0].name }, "Med 2": { done: meds[1].done, label: meds[1].name }, "Med 3": { done: meds[2].done, label: meds[2].name },
+    "Vitamins": { done: yes("Vitamins") }, "Skincare AM": { done: yes("Skincare AM") }, "Skincare PM": { done: yes("Skincare PM") }
+  };
+  // Prefer the sheet's own daily score (share of 15 core habits)
+  const scoreRaw = val("Daily score");
+  let sheetScore = typeof scoreRaw === "number" ? scoreRaw : NaN;
+  const all = Object.values(s); const doneCount = all.filter(x => x.done).length;
+  const habitScore = isNaN(sheetScore) ? doneCount / all.length : sheetScore;
+  return { s, habitScore: Math.max(0, Math.min(1, habitScore)) };
+}
+
+// ---------- scoring ----------
+// Focus sessions live in the tracker's Focus Log tab (one row per session, from here, the Terminal or the phone).
+// Sessions that couldn't reach the tracker wait in a queue: this page's own (localStorage "focusQueue")
+// and the Terminal's (focus-log.js, window.JUNE_TERMINAL_PENDING). Both sync on the next load.
+const TOPICS = ["Study", "Work", "Business", "Real Estate", "Admin", "Other"];
+function pendingSessions() {
+  const synced = store.get("syncedIds", []);
+  const term = (window.JUNE_TERMINAL_PENDING || []).filter(s => synced.indexOf(s.id) < 0).map(s => Object.assign({ source: "terminal" }, s));
+  return store.get("focusQueue", []).concat(term);
+}
+function focusCount() {
+  const server = data && data.focus ? data.focus.count : 0;
+  return server + pendingSessions().filter(s => s.date === todayStr()).length;
+}
+function loadTerminalFocus() {
+  const old = document.getElementById("termFocus"); if (old) old.remove();
+  const s = document.createElement("script"); s.id = "termFocus"; s.src = "focus-log.js?t=" + Date.now();
+  s.onload = () => { if (pendingSessions().length) syncFocus(); else { render(); drawPomo(); } }; s.onerror = () => {};
+  document.body.appendChild(s);
+}
+let syncing = false;
+async function syncFocus() {
+  if (syncing) return; syncing = true;
+  try {
+    for (const s of pendingSessions()) {
+      const d = await api({ action: "focus", id: s.id, minutes: s.minutes, topic: s.topic, date: s.date, source: s.source || "widget" });
+      if (!d || d.error) break;
+      store.set("focusQueue", store.get("focusQueue", []).filter(q => q.id !== s.id));
+      if (s.source === "terminal") { const ids = store.get("syncedIds", []); ids.push(s.id); store.set("syncedIds", ids.slice(-300)); }
+    }
+  } finally { syncing = false; render(); drawPomo(); }
+}
+function compute() {
+  const goalTasks = CONFIG.dailyTaskGoal || 3, goalFocus = CONFIG.dailyFocusGoal || 4;
+  let habits = 0, tasksDone = 0, hs = null;
+  if (data && !data.error) { hs = habitStatus(data); habits = hs.habitScore; tasksDone = data.tasks.done.length; }
+  const task = Math.min(1, tasksDone / goalTasks), focus = Math.min(1, focusCount() / goalFocus);
+  let total = 0.5 * habits + 0.3 * task + 0.2 * focus;
+  const demo = new URLSearchParams(location.search).get("demo");
+  if (demo !== null) total = Math.max(0, Math.min(1, parseFloat(demo) || 0));
+  return { habits, task, focus, total, tasksDone, goalTasks, goalFocus, hs };
+}
+
+// ---------- scenes ----------
+function catSVG(level) {
+  const eyesOpen = `<g class="blink"><ellipse cx="188" cy="104" rx="7" ry="${level === 0 ? 4 : 8}" fill="#e6b84a"/><ellipse cx="214" cy="104" rx="7" ry="${level === 0 ? 4 : 8}" fill="#e6b84a"/>
+    <ellipse cx="188" cy="105" rx="2" ry="${level === 0 ? 3 : 6}" fill="#1a1010"/><ellipse cx="214" cy="105" rx="2" ry="${level === 0 ? 3 : 6}" fill="#1a1010"/></g>`;
+  const eyesHappy = `<path d="M181 105 q7 -8 14 0" stroke="#e6b84a" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M207 105 q7 -8 14 0" stroke="#e6b84a" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+  const brows = level === 0 ? `<path d="M178 92 l16 6 M224 92 l-16 6" stroke="#e9b9a8" stroke-width="2.5" stroke-linecap="round"/>` : "";
+  const ears = level === 0
+    ? `<path d="M168 92 l-22 -8 l16 22 z M234 92 l22 -8 l-16 22 z" fill="#1e1418"/>`
+    : `<path d="M170 86 l-6 -30 l26 18 z M232 86 l6 -30 l-26 18 z" fill="#1e1418"/><path d="M172 80 l-3 -16 l13 10 z M230 80 l3 -16 l-13 10 z" fill="#e9b9a8" opacity=".6"/>`;
+  const mouth = level >= 2 ? `<path d="M196 118 q5 5 10 0" stroke="#e9b9a8" stroke-width="2" fill="none"/>` : level === 0 ? `<path d="M194 121 q7 -6 14 0" stroke="#e9b9a8" stroke-width="2" fill="none"/>` : `<circle cx="201" cy="120" r="2.4" fill="#e9b9a8"/>`;
+  const extras = [
+    `<g><g class="mug"><rect x="56" y="122" width="26" height="28" rx="4" fill="#8e5a7a"/><path d="M82 128 q10 4 0 14" stroke="#8e5a7a" stroke-width="4" fill="none"/></g>
+      <path d="M150 60 l8 -14 l6 12 l8 -12" stroke="#c0605a" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <g class="bubble"><rect x="236" y="34" width="70" height="30" rx="14" fill="#fff8f1" stroke="#c0605a"/><text x="271" y="54" text-anchor="middle" font-family="Georgia" font-size="14" fill="#c0605a">HSSS!</text></g></g>`,
+    `<g class="bubble"><rect x="240" y="40" width="74" height="30" rx="14" fill="#fff8f1" stroke="#b48c64"/><text x="277" y="60" text-anchor="middle" font-family="Georgia" font-size="14" fill="#8e5a7a">mrrow?</text></g>`,
+    `<g class="bubble"><rect x="244" y="44" width="58" height="28" rx="14" fill="#fff8f1" stroke="#b48c64"/><text x="273" y="63" text-anchor="middle" font-family="Georgia" font-size="13" fill="#8e5a7a">mrrp</text></g>`,
+    `<g><text x="236" y="70" font-family="Georgia" font-style="italic" font-size="15" fill="#8e5a7a">prrrr…</text>
+      <path class="heart" style="animation-delay:0s" d="M150 70 c-6 -8 -16 0 0 12 c16 -12 6 -20 0 -12z" fill="#e07a8a"/>
+      <path class="heart" style="animation-delay:1s" d="M250 90 c-5 -7 -14 0 0 10 c14 -10 5 -17 0 -10z" fill="#e9b9a8"/>
+      <path class="heart" style="animation-delay:2s" d="M128 96 c-5 -7 -14 0 0 10 c14 -10 5 -17 0 -10z" fill="#e2bd85"/></g>`
+  ][level];
+  return `<svg viewBox="0 0 340 210" preserveAspectRatio="xMidYMid slice" class="s${level}">
+    <rect x="0" y="150" width="340" height="60" fill="#e8c9bb"/><rect x="0" y="148" width="340" height="4" fill="#d9b4a4"/>
+    <ellipse cx="203" cy="176" rx="70" ry="9" fill="#c9a092" opacity=".55"/>
+    <path class="tail" d="M248 152 q46 -6 40 -52 q-2 -14 -12 -10 q4 30 -30 46" fill="#1e1418"/>
+    <g class="catbody">
+      <path d="M150 170 q-6 -56 52 -62 q56 6 50 62 z" fill="#1e1418"/>
+      <path d="M160 172 q8 -8 18 0 M226 172 q8 -8 18 0" stroke="#2c1f24" stroke-width="10" stroke-linecap="round"/>
+      <circle cx="201" cy="104" r="38" fill="#1e1418"/>
+      ${ears}${brows}
+      ${level === 3 ? eyesHappy : eyesOpen}
+      <path d="M198 113 l3 3 l3 -3 z" fill="#e9b9a8"/>${mouth}
+      <path d="M170 116 h-20 M170 121 h-18 M232 116 h20 M232 121 h18" stroke="#6a5560" stroke-width="1.2"/>
+      <circle cx="201" cy="146" r="5" fill="#e2bd85"/>
+    </g>
+    ${extras}
+  </svg>`;
+}
+function cookSVG(p) {
+  const show = t => p >= t ? 1 : 0;
+  return `<svg viewBox="0 0 340 210" preserveAspectRatio="xMidYMid slice">
+    <rect x="0" y="0" width="340" height="210" fill="url(#kbg)"/>
+    <defs><linearGradient id="kbg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fbeee4"/><stop offset="1" stop-color="#f1d6cc"/></linearGradient></defs>
+    <!-- tile backsplash -->
+    ${Array.from({length: 9}, (_, i) => `<rect x="${i * 40}" y="0" width="38" height="38" rx="3" fill="${i % 2 ? '#e7c3b3' : '#efd4c6'}" opacity=".6"/>`).join("")}
+    <rect x="0" y="150" width="340" height="60" fill="#c99a7e"/><rect x="0" y="146" width="340" height="6" fill="#b58467"/>
+    <!-- June: bald, deep brown skin, gold hoops, plum apron -->
+    <g>
+      <path d="M40 150 q0 -48 34 -50 q34 2 34 50 z" fill="#8e5a7a"/>
+      <rect x="64" y="86" width="20" height="16" rx="6" fill="#6b3f2a"/>
+      <ellipse cx="74" cy="70" rx="19" ry="22" fill="#6b3f2a"/>
+      <circle cx="56" cy="74" r="4" fill="none" stroke="#e2bd85" stroke-width="2"/>
+      <path d="M66 70 q3 2 6 0 M78 70 q3 2 6 0" stroke="#2a1810" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+      <path d="M70 80 q5 4 10 0" stroke="#3a1c14" stroke-width="1.6" fill="none"/>
+      <path d="M62 104 q12 10 24 0" stroke="#e2bd85" stroke-width="1.4" fill="none"/>
+      <g class="stir"><path d="M100 112 q12 0 14 8" stroke="#6b3f2a" stroke-width="9" stroke-linecap="round" fill="none"/><path d="M112 116 l26 20" stroke="#a87a4a" stroke-width="3" stroke-linecap="round"/></g>
+    </g>
+    <!-- pot -->
+    <g>
+      <path d="M118 132 h66 v14 q0 10 -10 10 h-46 q-10 0 -10 -10 z" fill="#3a2430"/>
+      <rect x="114" y="128" width="74" height="6" rx="3" fill="#4a2e3e"/>
+      <ellipse class="food" cx="151" cy="131" rx="33" ry="4" fill="#f6efe2" opacity="${show(0.2)}"/>
+      <g class="steam" opacity="${p >= 0.2 ? 1 : 0}"><path d="M140 120 q-6 -8 0 -16" stroke="#fff" stroke-width="2.4" fill="none"/><path d="M152 118 q-6 -8 0 -16" stroke="#fff" stroke-width="2.4" fill="none"/><path d="M164 120 q-6 -8 0 -16" stroke="#fff" stroke-width="2.4" fill="none"/></g>
+    </g>
+    <!-- plate -->
+    <g transform="translate(250 132)">
+      <ellipse cx="0" cy="8" rx="62" ry="15" fill="#d9b4a4" opacity=".6"/>
+      <ellipse cx="0" cy="0" rx="58" ry="16" fill="#fffaf4" stroke="#e2bd85" stroke-width="2"/>
+      <ellipse cx="0" cy="0" rx="44" ry="11" fill="none" stroke="#e7d2c4"/>
+      <g class="food" opacity="${show(0.2)}"><ellipse cx="-14" cy="-3" rx="22" ry="8" fill="#7a4a3a"/>${Array.from({length: 14}, (_, i) => `<circle cx="${-30 + (i % 7) * 5}" cy="${-6 + Math.floor(i / 7) * 5}" r="1.4" fill="#3a1c14"/>`).join("")}</g>
+      <g class="food" opacity="${show(0.4)}"><path d="M-6 -2 q16 -10 30 0 q-14 8 -30 0z" fill="#5a2e22"/></g>
+      <g class="food" opacity="${show(0.6)}"><rect x="10" y="-9" width="11" height="9" rx="3" fill="#a45a2a"/><rect x="22" y="-6" width="11" height="9" rx="3" fill="#b8652e"/><rect x="14" y="-1" width="11" height="8" rx="3" fill="#9a4f24"/></g>
+      <g class="food" opacity="${show(0.8)}"><ellipse cx="-36" cy="4" rx="9" ry="5" fill="#e0a83a"/><ellipse cx="-26" cy="8" rx="9" ry="5" fill="#d89a2e"/></g>
+      <g class="food" opacity="${show(1)}"><path d="M30 6 q8 -4 16 0 q-8 6 -16 0z" fill="#f2e6b8"/><path d="M33 5 l10 1" stroke="#e46a3a" stroke-width="2"/><path d="M34 3 l8 3" stroke="#7ab35a" stroke-width="2"/></g>
+    </g>
+    <g font-family="Georgia" font-size="10.5" fill="#8e5a7a" font-style="italic">
+      <text x="200" y="76" opacity="${show(0.2)}">diri kole ak pwa</text>
+      <text x="200" y="88" opacity="${show(0.6)}">griyo</text>
+      <text x="200" y="100" opacity="${show(0.8)}">bannann peze</text>
+      <text x="200" y="112" opacity="${show(1)}">pikliz</text>
+    </g>
+    <g opacity="${show(1)}"><text x="250" y="58" text-anchor="middle" font-family="Georgia" font-size="16" fill="#8e5a7a">Bon apeti!</text>
+      <path class="sparkle" d="M188 46 l3 7 l7 3 l-7 3 l-3 7 l-3 -7 l-7 -3 l7 -3z" fill="#e2bd85"/><path class="sparkle" style="animation-delay:.9s" d="M312 48 l2 5 l5 2 l-5 2 l-2 5 l-2 -5 l-5 -2 l5 -2z" fill="#e2bd85"/></g>
+  </svg>`;
+}
+const CAT_LINES = [
+  ["Acting up", "Knocking your mug over. Pick one small win."],
+  ["Restless", "Pacing and meowing. A habit or two will settle her."],
+  ["Content", "Slow blinks. You're on track."],
+  ["Purring", "Happy to be here, just like you."]
+];
+const COOK_LINES = [
+  [0, "Mise en place", "Fire's off. Start with one habit."],
+  [0.2, "Diri ak pwa", "Rice is on the stove."],
+  [0.4, "Sòs pwa", "Bean sauce is simmering."],
+  [0.6, "Griyo", "Griyo is frying."],
+  [0.8, "Bannann peze", "Plantains are pressed."],
+  [1, "Bon apeti!", "Full plate. You did that."]
+];
+
+// ---------- illustrated scenes + live motion ----------
+// Points are fractions of the 16:9 artwork.
+const ART = {
+  cat: [
+    { img: "art/cat0.jpg", fx: "shake", glow: [[0.265, 0.6]], smoke: [[0.868, 0.3]], steam: [], hearts: false },
+    { img: "art/cat1.jpg", fx: "bounce", glow: [[0.265, 0.6]], smoke: [[0.868, 0.3]], steam: [[0.715, 0.54]], hearts: false },
+    { img: "art/cat2.jpg", fx: "breathe", glow: [[0.265, 0.6]], smoke: [[0.868, 0.3]], steam: [[0.715, 0.54]], hearts: false },
+    { img: "art/cat3.jpg", fx: "purr", glow: [[0.265, 0.6]], smoke: [[0.868, 0.3]], steam: [[0.715, 0.54]], hearts: true }
+  ],
+  cook: [
+    { img: "art/cook0.jpg", fx: "breathe", glow: [], smoke: [], steam: [], hearts: false },
+    { img: "art/cook1.jpg", fx: "breathe", glow: [], smoke: [], steam: [[0.79, 0.62], [0.84, 0.6]], hearts: false },
+    { img: "art/cook2.jpg", fx: "breathe", glow: [], smoke: [], steam: [[0.66, 0.66], [0.72, 0.64]], hearts: false },
+    { img: "art/cook3.jpg", fx: "breathe", glow: [], smoke: [], steam: [[0.83, 0.6], [0.66, 0.74]], hearts: true }
+  ]
+};
+const CAT_TEXT = [
+  ["Acting up", "Knocking your tea over. Pick one small win."],
+  ["Restless", "Pacing and meowing. A habit or two will settle her."],
+  ["Content", "Slow blinks. You're on track."],
+  ["Purring", "Happy to be here, just like you."]
+];
+const COOK_TEXT = [
+  ["Mise en place", "Rinsing the rice. Start with one habit."],
+  ["Diri ak pwa", "Rice and beans on the stove."],
+  ["Griyo", "Griyo is frying. Almost there."],
+  ["Bon apeti!", "Full plate. You did that."]
+];
+let sceneKey = "", particles = [], sceneCfg = null, rafOn = false;
+
+function showScene(v, total) {
+  const level = v === "cat"
+    ? (total < 0.25 ? 0 : total < 0.5 ? 1 : total < 0.85 ? 2 : 3)
+    : (total < 0.34 ? 0 : total < 0.67 ? 1 : total < 0.9 ? 2 : 3);
+  const key = v + level;
+  if (key === sceneKey) return;
+  sceneKey = key;
+  sceneCfg = ART[v][level];
+  const text = (v === "cat" ? CAT_TEXT : COOK_TEXT)[level];
+  const scene = $("scene");
+  const old = scene.querySelector(".art");
+  const art = document.createElement("div");
+  art.className = "art fx-" + sceneCfg.fx;
+  art.innerHTML = `<img src="${sceneCfg.img}" alt="">` +
+    sceneCfg.glow.map(p => `<div class="glow" style="left:${p[0] * 100}%;top:${p[1] * 100}%"></div>`).join("");
+  scene.insertBefore(art, scene.querySelector("canvas"));
+  requestAnimationFrame(() => art.classList.add("in"));
+  if (old) setTimeout(() => old.remove(), 900);
+  scene.querySelector(".mood").innerHTML = `<b>${text[0]}</b><span>${text[1]}</span>`;
+  particles = [];
+  if (!rafOn) { rafOn = true; requestAnimationFrame(tickFx); }
+}
+
+function tickFx(t) {
+  const cv = $("fx"), sc = $("scene");
+  const W = sc.clientWidth, H = sc.clientHeight, dpr = window.devicePixelRatio || 1;
+  if (cv.width !== Math.round(W * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
+  const g = cv.getContext("2d");
+  g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  g.clearRect(0, 0, W, H);
+  if (sceneCfg) {
+    const emit = (pts, kind, rate) => pts.forEach(p => { if (Math.random() < rate) particles.push({ kind, x: p[0] * W + (Math.random() - .5) * 4, y: p[1] * H, age: 0, life: kind === "heart" ? 160 : 140 + Math.random() * 60, seed: Math.random() * 6.28 }); });
+    emit(sceneCfg.smoke, "smoke", 0.22);
+    emit(sceneCfg.steam, "steam", 0.18);
+    if (sceneCfg.hearts && Math.random() < 0.012) particles.push({ kind: "heart", x: W * (0.38 + Math.random() * 0.24), y: H * 0.55, age: 0, life: 160, seed: Math.random() * 6.28 });
+  }
+  particles = particles.filter(p => p.age++ < p.life);
+  for (const p of particles) {
+    const u = p.age / p.life;
+    if (p.kind === "heart") {
+      const x = p.x + Math.sin(u * 6 + p.seed) * 8, y = p.y - u * H * 0.45, a = Math.sin(Math.PI * u) * 0.9, s = 7 + 5 * u;
+      g.fillStyle = `rgba(233,140,160,${a})`;
+      g.beginPath(); g.moveTo(x, y + s * .35);
+      g.bezierCurveTo(x - s, y - s * .4, x - s * .5, y - s * 1.1, x, y - s * .45);
+      g.bezierCurveTo(x + s * .5, y - s * 1.1, x + s, y - s * .4, x, y + s * .35); g.fill();
+      continue;
+    }
+    const rise = p.kind === "smoke" ? H * 0.42 : H * 0.28;
+    const x = p.x + Math.sin(u * 5 + p.seed) * (3 + 14 * u), y = p.y - u * rise;
+    const r = (p.kind === "smoke" ? 2 : 3) + u * (p.kind === "smoke" ? 9 : 12);
+    const a = Math.sin(Math.PI * Math.min(1, u * 1.2)) * (p.kind === "smoke" ? 0.16 : 0.2);
+    const grd = g.createRadialGradient(x, y, 0, x, y, r);
+    grd.addColorStop(0, `rgba(255,248,240,${a})`); grd.addColorStop(1, "rgba(255,248,240,0)");
+    g.fillStyle = grd; g.beginPath(); g.arc(x, y, r, 0, 6.283); g.fill();
+  }
+  requestAnimationFrame(tickFx);
+}
+
+// ---------- render ----------
+function render() {
+  const c = compute();
+  $("date").textContent = new Date().toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+  const pct = Math.round(c.total * 100);
+  $("pct").textContent = pct + "%";
+  $("ringFg").style.strokeDashoffset = 194.8 * (1 - c.total);
+  $("bHab").style.width = (c.habits * 100) + "%"; $("vHab").textContent = Math.round(c.habits * 100) + "%";
+  $("bTask").style.width = (c.task * 100) + "%"; $("vTask").textContent = c.tasksDone + "/" + c.goalTasks;
+  $("bFocus").style.width = (c.focus * 100) + "%"; $("vFocus").textContent = focusCount() + "/" + c.goalFocus;
+
+  showScene(view, c.total);
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t.dataset.view === view));
+
+  // groups + chips
+  const g = $("groups"), ch = $("chips");
+  if (c.hs) {
+    g.innerHTML = Object.keys(GROUPS).map(k => {
+      const items = GROUPS[k].map(n => c.hs.s[n]);
+      const d = items.filter(x => x.done).length;
+      return `<div class="grp ${k === selGroup ? "sel" : ""}" data-g="${k}"><b>${d}/${items.length}</b><span>${k}</span></div>`;
+    }).join("");
+    ch.innerHTML = GROUPS[selGroup].map(n => {
+      const x = c.hs.s[n], col = HABIT_COL[n];
+      const tip = col ? (STEP[col] ? `Tap to add ${STEP[col]}` : "Tap to check or uncheck") : "Logged in the sheet";
+      return `<span class="chip ${x.done ? "done" : ""} ${col ? "tap" : ""}" data-h="${n}" title="${tip}">${x.label || n}</span>`;
+    }).join("")
+      + (data.tasks.done.length ? data.tasks.done.slice(0, 3).map(t => `<span class="chip done">${t.id}</span>`).join("") : "");
+    g.querySelectorAll(".grp").forEach(el => el.onclick = () => { selGroup = el.dataset.g; store.set("group", selGroup); render(); });
+    ch.querySelectorAll(".chip.tap").forEach(el => el.onclick = () => tapHabit(el));
+  } else {
+    g.innerHTML = ""; ch.innerHTML = `<span class="chip">Tracker not connected yet</span>`;
+  }
+  renderWeek(); renderUpNext(); renderNextEvent();
+}
+
+// ---------- v2 panels ----------
+const HABIT_COL = {
+  "Water": "Water (oz)", "Walk": "Walk (min)", "Pages": "Pages read", "Stretched": "Stretched", "Read": "Read",
+  "Language practice": "Language practice", "Bible / prayer": "Bible / prayer", "Wrote": "Wrote",
+  "Emails handled": "Emails handled", "Texts answered": "Texts answered", "Med 1": "Med 1", "Med 2": "Med 2", "Med 3": "Med 3",
+  "Vitamins": "Vitamins", "Skincare AM": "Skincare AM", "Skincare PM": "Skincare PM"
+};
+const STEP = { "Water (oz)": "16 oz", "Walk (min)": "15 min", "Pages read": "5 pages" };
+async function tapHabit(el) {
+  if (el.classList.contains("busy")) return;
+  el.classList.add("busy");
+  const d = await api({ action: "habit", name: HABIT_COL[el.dataset.h] });
+  if (!d || d.error) toast(d && d.error ? "Couldn't update: " + d.error : "Offline, try again in a bit");
+}
+function renderWeek() {
+  const w = $("week");
+  if (!data || !data.week) { w.innerHTML = ""; return; }
+  w.innerHTML = data.week.map(d => {
+    const dt = new Date(d.date + "T12:00:00"), today = d.date === todayStr();
+    const pct = d.score == null ? 0 : Math.round(d.score * 100);
+    const fd = today ? focusCount() : d.focus;
+    return `<div class="day ${today ? "today" : ""}" title="${dt.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}: habits ${pct}%, ${fd} focus">
+      ${dt.toLocaleDateString("en-US", { weekday: "narrow" })}<div class="meter"><i style="height:${pct}%"></i></div><div class="fd">${"•".repeat(Math.min(fd, 6))}</div></div>`;
+  }).join("");
+}
+function renderUpNext() {
+  const box = $("upnext");
+  const list = data && data.tasks && data.tasks.upNext ? data.tasks.upNext.slice(0, 3) : [];
+  box.hidden = !list.length;
+  if (!list.length) { box.innerHTML = ""; return; }
+  box.innerHTML = `<h3>Up next</h3>` + list.map(t => `<div class="task"><span title="${(t.task || "").replace(/"/g, "&quot;")}${t.next ? " | " + String(t.next).replace(/"/g, "&quot;") : ""}">${t.id} · ${t.task}${t.late ? "<em>overdue</em>" : ""}</span><button data-id="${t.id}" title="Mark done in your tracker">Done</button></div>`).join("");
+  box.querySelectorAll("button").forEach(b => b.onclick = async () => {
+    b.disabled = true; b.textContent = "…";
+    const d = await api({ action: "task", id: b.dataset.id });
+    if (!d || d.error) { toast("Couldn't mark it done: " + (d && d.error || "offline")); b.disabled = false; b.textContent = "Done"; }
+    else toast(b.dataset.id + " marked done. Nice.");
+  });
+}
+function renderNextEvent() {
+  const el = $("nextEv"), ev = data && data.nextEvent;
+  if (!ev) { el.textContent = ""; return; }
+  const mins = Math.round((new Date(ev.start) - Date.now()) / 60000);
+  if (mins < -5) { el.textContent = ""; return; }
+  const when = mins <= 0 ? "now" : mins < 60 ? "in " + mins + " min" : mins < 24 * 60 ? "in " + Math.floor(mins / 60) + "h " + (mins % 60) + "m" : new Date(ev.start).toLocaleString("en-US", { weekday: "short", hour: "numeric", minute: "2-digit" });
+  el.innerHTML = `Next: <b></b> · ${when}`; el.querySelector("b").textContent = ev.title;
+}
+let toastT = null;
+function toast(msg, action) {
+  const t = $("toast");
+  t.innerHTML = `<span></span>`; t.querySelector("span").textContent = msg;
+  if (action) { const b = document.createElement("button"); b.textContent = action.label; b.onclick = () => { action.run(); t.classList.remove("show"); }; t.appendChild(b); }
+  t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("show"), action ? 12000 : 4000);
+}
+
+// ---------- data ----------
+// One call does it all: reads today's data, or applies a change (focus, habit, task) and returns fresh data.
+async function api(params) {
+  if (CONFIG.demo) return demoApi(params || {});
+  const q = Object.assign({ key: CONFIG.key, date: todayStr() }, params || {});
+  const url = CONFIG.endpoint + "?" + Object.keys(q).map(k => k + "=" + encodeURIComponent(q[k])).join("&");
+  try {
+    const r = await fetch(url, { cache: "no-store" });
+    const d = await r.json();
+    if (d && !d.error) { data = d; store.set("lastData", d); }
+    $("status").textContent = d.error ? "Tracker: " + d.error : "Updated " + new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+    render(); drawPomo();
+    return d;
+  } catch (e) {
+    $("status").textContent = "Offline, showing last view";
+    render(); drawPomo();
+    return null;
+  }
+}
+// Demo mode (CONFIG.demo = true): runs on sample-data.js with no tracker, so anyone can try the widget.
+function demoApi(p) {
+  const d = window.SAMPLE_DATA ? (data && data.demo ? data : JSON.parse(JSON.stringify(window.SAMPLE_DATA))) : null;
+  if (!d) { $("status").textContent = "Demo data missing"; return null; }
+  d.date = todayStr(); d.demo = true;
+  if (p.action === "focus") { d.focus.count++; d.focus.minutes += Number(p.minutes) || 0; d.focus.weekMinutesByTopic[p.topic] = (d.focus.weekMinutesByTopic[p.topic] || 0) + (Number(p.minutes) || 0); }
+  if (p.action === "habit") {
+    const i = d.habits.headers.indexOf(p.name), add = { "Water (oz)": 16, "Walk (min)": 15, "Pages read": 5 }[p.name];
+    if (i >= 0) d.habits.row[i] = add ? (Number(d.habits.row[i]) || 0) + add : !(d.habits.row[i] === true);
+  }
+  if (p.action === "task") { const t = d.tasks.upNext.find(x => x.id === p.id); d.tasks.upNext = d.tasks.upNext.filter(x => x.id !== p.id); if (t) d.tasks.done.push({ id: t.id, task: t.task }); }
+  data = d; $("status").textContent = "Demo mode"; render(); drawPomo();
+  return d;
+}
+async function load() {
+  if (!data) { const last = store.get("lastData", null); if (last && last.date === todayStr()) data = last; }
+  const d = await api();
+  if (d && !d.error && pendingSessions().length) syncFocus();
+}
+
+// ---------- pomodoro ----------
+// Focus length (5 to 120 min, steps of 5) and break length (1 to 30 min) are set with − / + while the timer is idle.
+// Every 4th focus session earns a long break (3x the short break, up to 45 min).
+let focusMin = Math.min(120, Math.max(5, store.get("focusMin", 25)));
+let breakMin = Math.min(30, Math.max(1, store.get("breakMin", 5)));
+let topic = TOPICS.indexOf(store.get("topic", "Study")) >= 0 ? store.get("topic", "Study") : "Study";
+const longMin = () => Math.min(45, breakMin * 3);
+const P = { focus: focusMin * 60, break: breakMin * 60, long: longMin() * 60 };
+let mode = "focus", left = P.focus, timer = null, endAt = 0;
+function fmt(s) { return String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0"); }
+function idle() { return !timer && left === P[mode]; }
+function adjust(dir) {
+  if (!idle()) return;
+  if (mode === "focus") { focusMin = Math.min(120, Math.max(5, focusMin + dir * 5)); store.set("focusMin", focusMin); }
+  else { breakMin = Math.min(30, Math.max(1, breakMin + dir)); store.set("breakMin", breakMin); }
+  P.focus = focusMin * 60; P.break = breakMin * 60; P.long = longMin() * 60; left = P[mode]; drawPomo();
+}
+$("pMinus").onclick = () => adjust(-1);
+$("pPlus").onclick = () => adjust(1);
+function fmtMin(m) { m = Math.round(m); return m >= 60 ? Math.floor(m / 60) + "h" + (m % 60 ? " " + (m % 60) + "m" : "") : m + "m"; }
+function drawPomo() {
+  $("pTime").textContent = fmt(left);
+  $("pLbl").textContent = mode === "focus" ? "Focus · " + focusMin + " min" : mode === "long" ? "Long break · " + longMin() + " min" : "Break · " + breakMin + " min";
+  const cur = mode === "focus" ? focusMin : breakMin, lo = mode === "focus" ? 5 : 1, hi = mode === "focus" ? 120 : 30;
+  $("pMinus").disabled = !idle() || mode === "long" || cur <= lo; $("pPlus").disabled = !idle() || mode === "long" || cur >= hi;
+  $("pStart").textContent = timer ? "Pause" : (left < P[mode] ? "Resume" : "Start");
+  $("tomatoes").textContent = "● ".repeat(focusCount()).trim();
+  const tp = $("topics");
+  tp.style.display = mode === "focus" ? "" : "none";
+  tp.innerHTML = TOPICS.map(t => `<span class="topic ${t === topic ? "on" : ""}" data-t="${t}">${t}</span>`).join("");
+  tp.querySelectorAll(".topic").forEach(el => el.onclick = () => { if (timer) return; topic = el.dataset.t; store.set("topic", topic); drawPomo(); });
+  const wk = Object.assign({}, data && data.focus ? data.focus.weekMinutesByTopic : {});
+  pendingSessions().forEach(s => { wk[s.topic] = (wk[s.topic] || 0) + Number(s.minutes || 0); });
+  const parts = Object.keys(wk).filter(k => wk[k] > 0).sort((a, b) => wk[b] - wk[a]).map(k => k + " " + fmtMin(wk[k]));
+  $("wkmin").textContent = parts.length ? "Last 7 days: " + parts.join(" · ") : "";
+  document.title = timer ? fmt(left) + " · June's Day" : "June's Day";
+}
+function chime() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const notes = [880, 1108.7, 1318.5, 1760];
+    for (let rep = 0; rep < 3; rep++) notes.forEach((f, i) => {
+      const o = ctx.createOscillator(), g = ctx.createGain(), t = ctx.currentTime + rep * 1.4 + i * 0.18;
+      o.type = "sine"; o.frequency.value = f; o.connect(g); g.connect(ctx.destination);
+      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.25, t + 0.02); g.gain.exponentialRampToValueAtTime(0.001, t + 1.2);
+      o.start(t); o.stop(t + 1.3);
+    });
+  } catch (e) {}
+}
+function finish() {
+  clearInterval(timer); timer = null;
+  const wasFocus = mode === "focus";
+  if (wasFocus) {
+    const s = { id: "w" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), date: todayStr(), minutes: focusMin, topic };
+    store.set("focusQueue", store.get("focusQueue", []).concat([s]));
+    mode = focusCount() % 4 === 0 ? "long" : "break";
+  } else mode = "focus";
+  left = P[mode];
+  chime();
+  document.body.classList.add("ringing");
+  setTimeout(() => document.body.classList.remove("ringing"), 8000);
+  try { window.focus(); } catch (e) {}
+  render(); drawPomo();
+  if (wasFocus) { syncFocus(); nudge(); }
+}
+// Gentle nudges after each focus session: alternate water and a stretch, skip what's already done.
+function nudge() {
+  const hs = data && !data.error ? habitStatus(data).s : null;
+  const n = store.get("nudgeN", 0); store.set("nudgeN", n + 1);
+  const waterLeft = hs && !hs["Water"].done, stretchLeft = hs && !hs["Stretched"].done;
+  const pickWater = waterLeft && (n % 2 === 0 || !stretchLeft);
+  if (pickWater) toast("Focus done. Sip some water?", { label: "+16 oz", run: () => api({ action: "habit", name: "Water (oz)" }) });
+  else if (stretchLeft) toast("Focus done. Stand up and stretch?", { label: "Stretched", run: () => api({ action: "habit", name: "Stretched" }) });
+  else toast(mode === "long" ? "Four down. Take a real break." : "Focus done. Well done, June.");
+}
+$("pStart").onclick = () => {
+  document.body.classList.remove("ringing");
+  if (timer) { clearInterval(timer); timer = null; drawPomo(); return; }
+  endAt = Date.now() + left * 1000;
+  timer = setInterval(() => { left = Math.max(0, Math.round((endAt - Date.now()) / 1000)); drawPomo(); if (left <= 0) finish(); }, 250);
+  drawPomo();
+};
+$("pReset").onclick = () => { clearInterval(timer); timer = null; mode = "focus"; left = P.focus; document.body.classList.remove("ringing"); drawPomo(); };
+setInterval(renderNextEvent, 60 * 1000);
+
+// ---------- wiring ----------
+document.querySelectorAll(".tab").forEach(t => t.onclick = () => { view = t.dataset.view; store.set("view", view); render(); });
+$("logLink").onclick = () => window.open(CONFIG.habitLogUrl, "_blank");
+let lastDay = todayStr();
+setInterval(() => { if (todayStr() !== lastDay) { lastDay = todayStr(); } load(); }, (CONFIG.refreshMinutes || 5) * 60 * 1000);
+window.addEventListener("focus", () => { load(); loadTerminalFocus(); });
+setInterval(loadTerminalFocus, 30 * 1000);
+render(); drawPomo(); load(); loadTerminalFocus();
+</script>
+</body>
+</html>
